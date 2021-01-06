@@ -1,0 +1,20 @@
+#ifndef WEB_PROJECTOR
+#define WEB_PROJECTOR
+
+namespace wp
+{
+class WebProjector
+{
+private:
+int portNumber;
+char *url;
+void (*ptrOnRequest)(int,char *[]); 
+public:
+WebProjector(int portNumber);
+~WebProjector();
+void start();
+void onRequest(const char *url,void (*ptrOnRequest)(int,char *[]));
+}; 
+} 
+
+#endif
