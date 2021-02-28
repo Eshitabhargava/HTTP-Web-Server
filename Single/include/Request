@@ -1,0 +1,22 @@
+#ifndef REQUEST
+#define REQUEST
+
+#include<iostream>
+
+using namespace std;
+
+namespace wp
+{
+class Request
+{
+public:
+char **data;
+char *method;
+char *resource;
+char *mimeType;
+char isClientSideTechnologyResource;
+int dataCount;
+}; //class Request ends
+} //namespace ends
+
+#endif

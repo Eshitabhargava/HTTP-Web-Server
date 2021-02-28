@@ -1,0 +1,25 @@
+#ifndef RESPONSE
+#define RESPONSE
+
+#include<iostream>
+
+using namespace std;
+
+namespace wp
+{
+class Response
+{
+int clientSocketDescriptor;
+bool socketClosed;
+bool headerExists;
+
+void createHeader();
+public:
+Response(int clientSocketDescriptor);
+void write(const char* responseData); //more overloads to be added for other primitive datatypes
+void close();
+
+}; //class Response ends
+} //namespace ends
+
+#endif
