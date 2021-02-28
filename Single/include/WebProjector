@@ -8,12 +8,13 @@ class WebProjector
 private:
 int portNumber;
 char *url;
-void (*ptrOnRequest)(int,char *[]); 
+void (*ptrOnRequest)(Request &,Response &); 
+
 public:
 WebProjector(int portNumber);
 ~WebProjector();
 void start();
-void onRequest(const char *url,void (*ptrOnRequest)(int,char *[]));
+void onRequest(const char *url,void (*ptrOnRequest)(Request &,Response &));
 }; 
 } 
 
