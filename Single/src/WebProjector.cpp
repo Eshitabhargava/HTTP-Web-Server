@@ -1,18 +1,12 @@
-#include<WebProjector>
 #include<stdio.h>
 #include<windows.h>
 #include<string.h>
 
+#include<WebProjector>
+#include<Request>
+#include<Response>
+
 using namespace wp;
-typedef struct _request
-{
-char *method;
-char *resource;
-char isClientSideTechnologyResource;
-char *mimeType;
-char **data;
-int dataCount;
-}REQUEST;
 
 int extensionEquals(const char *left,const char *right)
 {
@@ -87,7 +81,7 @@ if(resource[idx]=='\0') return 'N';
 return 'Y'; 
 }
 
-REQUEST* parseRequest(char *bytes)
+Request* parseRequest(char *bytes)
 {
 char method[11];
 char resource[1001];
@@ -147,7 +141,7 @@ i=pc[j]+1;
 } 
 
 printf("Request arrived for %s\n",resource);
-REQUEST *request=(REQUEST *)malloc(sizeof(REQUEST));
+Request *request=new Request;
 request->dataCount=dataCount;
 request->data=data;
 request->method=(char *)malloc((sizeof(char)*strlen(method)+1));
@@ -180,7 +174,7 @@ WebProjector::~WebProjector()
 if(this->url) delete [] this->url;
 }
 
-void WebProjector::onRequest(const char *url,void (*ptrOnRequest)(int,char *[]))
+void WebProjector::onRequest(const char *url,void (*ptrOnRequest)(Request &,Response &))
 {
 if(this->url) delete [] this->url; 
 this->url=NULL;
@@ -261,7 +255,7 @@ else if(bytesExtracted==0)
 else
 {
 requestBuffer[bytesExtracted]='\0';
-REQUEST *request=parseRequest(requestBuffer);
+Request *request=parseRequest(requestBuffer);
 if(request->isClientSideTechnologyResource=='Y')
 {
 if(request->resource==NULL) 
@@ -350,18 +344,14 @@ int ii=0;
 if(this->url[0]=='/') ii=1; 
 if(strcmp(this->url+ii,request->resource)==0) 
 {
-this->ptrOnRequest(request->dataCount,request->data);
+Response response(clientSocketDescriptor);
+this->ptrOnRequest(*request,response);
 if(request->data)
 {
 for(int i=0;i<request->dataCount;++i) free(request->data[i]);
 free(request->data);
 }
 printf("Sending Processed Page\n");
-char temp[1024];
-sprintf(temp,"<DOCTYPE HTML><html lang='en'><head><meta charset='utf-8'><title>Web Projector</title></head><body><h2 style='color:red'>Resource /%s Processed</h2></body></html>",request->resource);
-sprintf(responseBuffer,"HTTP/1.1 200 OK\nContent-Type:text/html\nContent-Length:%d\nConnection: close\n\n",strlen(temp));
-strcat(responseBuffer,temp);
-send(clientSocketDescriptor,responseBuffer,strlen(responseBuffer),0);
 }
 else
 {
