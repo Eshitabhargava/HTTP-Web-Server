@@ -256,6 +256,8 @@ else
 {
 requestBuffer[bytesExtracted]='\0';
 Request *request=parseRequest(requestBuffer);
+while(1) 
+{   
 if(request->isClientSideTechnologyResource=='Y')
 {
 if(request->resource==NULL) 
@@ -272,6 +274,8 @@ if(!file)
 strcpy(responseBuffer,"HTTP/1.1 200 OK\nContent-Type:text/html\nContent-Length:160\nConnection: close\n\n<DOCTYPE HTML><html lang='en'><head><meta charset='utf-8'><title>Web Projector</title></head><body><h2 style='color:red'>Resource / not found</h2></body></html>");
 send(clientSocketDescriptor,responseBuffer,strlen(responseBuffer),0);
 printf("Sending 404 Page\n");
+closesocket(clientSocketDescriptor); 
+break; 
 }
 else
 {
@@ -291,6 +295,7 @@ i+=readCount;
 }
 fclose(file);
 closesocket(clientSocketDescriptor);
+break;
 } 
 } 
 else
@@ -305,6 +310,8 @@ sprintf(responseBuffer,"HTTP/1.1 200 OK\nContent-Type:text/html\nContent-Length:
 strcat(responseBuffer,temp);
 send(clientSocketDescriptor,responseBuffer,strlen(responseBuffer),0);
 printf("Sending 404 Page\n");
+closesocket(clientSocketDescriptor);
+break;
 } 
 else
 {
@@ -324,6 +331,7 @@ i+=readCount;
 }
 fclose(file);
 closesocket(clientSocketDescriptor);
+break;
 }
 } 
 } 
@@ -331,12 +339,14 @@ else
 {
 if(!this->url || !this->ptrOnRequest) 
 {
-printf("Sending 404 Page\n");
 char temp[1024];
 sprintf(temp,"<DOCTYPE HTML><html lang='en'><head><meta charset='utf-8'><title>Web Projector</title></head><body><h2 style='color:red'>Resource /%s not found</h2></body></html>",request->resource);
 sprintf(responseBuffer,"HTTP/1.1 200 OK\nContent-Type:text/html\nContent-Length:%d\nConnection: close\n\n",strlen(temp));
 strcat(responseBuffer,temp);
 send(clientSocketDescriptor,responseBuffer,strlen(responseBuffer),0);
+printf("Sending 404 Page\n");
+closesocket(clientSocketDescriptor);
+break;
 } 
 else 
 {
@@ -346,12 +356,23 @@ if(strcmp(this->url+ii,request->resource)==0)
 {
 Response response(clientSocketDescriptor);
 this->ptrOnRequest(*request,response);
+if(request->forwardTo.length()>0) 
+{
+free(request->resource);
+request->resource=(char *)malloc((sizeof(char)*request->forwardTo.length())+1);
+strcpy(request->resource,request->forwardTo.c_str());
+request->isClientSideTechnologyResource=isClientSideResource(request->resource);
+request->mimeType=getMIMEType(request->resource);
+continue;
+}
 if(request->data)
 {
 for(int i=0;i<request->dataCount;++i) free(request->data[i]);
 free(request->data);
 }
 printf("Sending Processed Page\n");
+closesocket(clientSocketDescriptor);
+break;
 }
 else
 {
@@ -361,11 +382,14 @@ sprintf(responseBuffer,"HTTP/1.1 200 OK\nContent-Type:text/html\nContent-Length:
 strcat(responseBuffer,temp);
 send(clientSocketDescriptor,responseBuffer,strlen(responseBuffer),0);
 printf("Sending 404 Page\n");
+closesocket(clientSocketDescriptor);
+break;
 }
 } 
 }
 } 
-} 
+}
+}
 closesocket(serverSocketDescriptor);
 WSACleanup();
 return;
