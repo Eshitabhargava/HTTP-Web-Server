@@ -16,6 +16,10 @@ char *resource;
 char *mimeType;
 char isClientSideTechnologyResource;
 int dataCount;
+string forwardTo;
+
+string get(string name);
+void forward(string forwardTo);
 }; //class Request ends
 } //namespace ends
 
