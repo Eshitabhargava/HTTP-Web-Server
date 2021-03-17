@@ -17,6 +17,7 @@ void createHeader();
 public:
 Response(int clientSocketDescriptor);
 void write(const char* responseData); //more overloads to be added for other primitive datatypes
+void write(string responseData);
 void close();
 
 }; //class Response ends
