@@ -10,7 +10,7 @@ namespace wp
 {
 class Request
 {
-map<string,string> requestMappings;
+map<string,string> requests;
 public:
 char **data;
 char *method;
