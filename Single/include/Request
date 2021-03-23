@@ -2,6 +2,7 @@
 #define REQUEST
 
 #include<iostream>
+#include<map>
 
 using namespace std;
 
@@ -9,6 +10,7 @@ namespace wp
 {
 class Request
 {
+map<string,string> requestMappings;
 public:
 char **data;
 char *method;
@@ -18,6 +20,8 @@ char isClientSideTechnologyResource;
 int dataCount;
 string forwardTo;
 
+void set(string key,string value);
+string getValue(string key);
 string get(string name);
 void forward(string forwardTo);
 }; //class Request ends
