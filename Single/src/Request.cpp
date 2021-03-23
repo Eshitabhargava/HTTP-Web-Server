@@ -14,14 +14,14 @@ this->forwardTo=forwardTo;
 
 void Request::set(string key,string value)
 {
-this->requestMappings.insert(pair<string,string>(key,value));
+this->requests.insert(pair<string,string>(key,value));
 }
 
 string Request::getValue(string key)
 {
 map<string,string>::iterator iter;
-iter=this->requestMappings.find(key);
-if(iter == this->requestMappings.end()) return string("");
+iter=this->requests.find(key);
+if(iter == this->requests.end()) return string("");
 return iter->second;
 }
 
