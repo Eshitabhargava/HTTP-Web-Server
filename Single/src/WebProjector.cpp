@@ -165,24 +165,16 @@ return request;
 WebProjector::WebProjector(int portNumber)
 {
 this->portNumber=portNumber;
-this->url=NULL;
-this->ptrOnRequest=NULL;
 }
 
 WebProjector::~WebProjector()
 {
-if(this->url) delete [] this->url;
 }
 
-void WebProjector::onRequest(const char *url,void (*ptrOnRequest)(Request &,Response &))
+void WebProjector::onRequest(string url,void (*ptrOnRequest)(Request &,Response &))
 {
-if(this->url) delete [] this->url; 
-this->url=NULL;
-this->ptrOnRequest=NULL;
-if(!url || !ptrOnRequest) return;
-this->url=new char[strlen(url)+1];
-strcpy(this->url,url);
-this->ptrOnRequest=ptrOnRequest;
+if(url.length()==0 || !ptrOnRequest) return;
+this->requestMappings.insert(pair<string,void(*)(Request &,Response &)>(url,ptrOnRequest));
 }
 
 
@@ -337,7 +329,8 @@ break;
 } 
 else 
 {
-if(!this->url || !this->ptrOnRequest) 
+map<string,void(*)(Request &,Response &)>::iterator iter = this->requestMappings.find(string("/")+string(request->resource));
+if(iter == this->requestMappings.end()) 
 {
 char temp[1024];
 sprintf(temp,"<DOCTYPE HTML><html lang='en'><head><meta charset='utf-8'><title>Web Projector</title></head><body><h2 style='color:red'>Resource /%s not found</h2></body></html>",request->resource);
@@ -350,12 +343,8 @@ break;
 } 
 else 
 {
-int ii=0;
-if(this->url[0]=='/') ii=1; 
-if(strcmp(this->url+ii,request->resource)==0) 
-{
 Response response(clientSocketDescriptor);
-this->ptrOnRequest(*request,response);
+iter->second(*request,response);
 if(request->forwardTo.length()>0) 
 {
 free(request->resource);
@@ -373,18 +362,6 @@ free(request->data);
 printf("Sending Processed Page\n");
 closesocket(clientSocketDescriptor);
 break;
-}
-else
-{
-char temp[1024];
-sprintf(temp,"<DOCTYPE HTML><html lang='en'><head><meta charset='utf-8'><title>Web Projector</title></head><body><h2 style='color:red'>Resource /%s not found</h2></body></html>",request->resource);
-sprintf(responseBuffer,"HTTP/1.1 200 OK\nContent-Type:text/html\nContent-Length:%d\nConnection: close\n\n",strlen(temp));
-strcat(responseBuffer,temp);
-send(clientSocketDescriptor,responseBuffer,strlen(responseBuffer),0);
-printf("Sending 404 Page\n");
-closesocket(clientSocketDescriptor);
-break;
-}
 } 
 }
 } 
